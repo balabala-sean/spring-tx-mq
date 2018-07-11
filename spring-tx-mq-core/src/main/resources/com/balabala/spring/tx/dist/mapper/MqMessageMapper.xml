@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.balabala.spring.tx.dist.base.MqMessageMapper">
+
+	<resultMap id="BaseResultMap" type="com.balabala.spring.tx.dist.base.MqMessage">
+		<id column="id" jdbcType="BIGINT" property="id"/>
+		<result column="queue_name" jdbcType="VARCHAR" property="queueName"/>
+		<result column="status" jdbcType="VARCHAR" property="status"/>
+		<result column="message" jdbcType="VARCHAR" property="message"/>
+		<result column="retry_count" jdbcType="INTEGER" property="retryCount"/>
+		<result column="next_retry_time" jdbcType="TIMESTAMP" property="nextRetryTime"/>
+		<result column="send_success_time" jdbcType="TIMESTAMP" property="sendSuccessTime"/>
+		<result column="send_failed_time" jdbcType="TIMESTAMP" property="sendFailedTime"/>
+		<result column="send_failed_reason" jdbcType="VARCHAR" property="sendFailedReason"/>
+		<result column="version" jdbcType="INTEGER" property="version"/>
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+	</resultMap>
+
+	<sql id="Base_Column_List">
+	    id,
+	    queue_name,
+	    status,
+	    message,
+	    retry_count,
+	    next_retry_time,
+	    send_success_time,
+	    send_failed_time,
+	    send_failed_reason,
+	    version,
+	    create_time,
+	    update_time
+	</sql>
+
+	<select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		select
+			<include refid="Base_Column_List"/>
+		from
+			${tableName}
+		where id = #{id,jdbcType=BIGINT}
+	</select>
+
+	<select id="selectByNextRetryTime" resultMap="BaseResultMap">
+		select
+			<include refid="Base_Column_List"/>
+		from
+			${tableName}
+		where
+			next_retry_time &lt;= #{nextRetryTime,jdbcType=DATETIME}
+			status = #{status,jdbcType=VARCHAR}
+			limit #{start, jdbcType=INTEGER}, #{limit, jdbcType=INTEGER}
+	</select>
+
+	<delete id="deleteByCreateTime">
+	    delete
+	    from
+	    	${tableName}
+	    where
+	    	create_time &gt;= #{createTime,jdbcType=DATETIME}
+  	</delete>
+
+	<insert id="insert" parameterType="com.balabala.spring.tx.dist.base.MqMessage">
+	    insert into ${tableName} (
+	    	id,
+	    	queue_name,
+	    	status,
+		    message,
+		    retry_count,
+		    next_retry_time,
+		    send_success_time,
+		    send_failed_time,
+		    send_failed_reason,
+		    version,
+		    create_time,
+		    update_time
+	    )
+	    values (
+	    	#{id,jdbcType=BIGINT},
+	    	#{queueName,jdbcType=VARCHAR},
+	    	#{status,jdbcType=VARCHAR},
+			#{message,jdbcType=VARCHAR},
+			#{retryCount,jdbcType=INTEGER},
+			#{nextRetryTime,jdbcType=TIMESTAMP},
+			#{sendSuccessTime,jdbcType=TIMESTAMP},
+			#{sendFailedTime,jdbcType=TIMESTAMP},
+			#{sendFailedReason,jdbcType=VARCHAR},
+			0,
+			now(),
+			now()
+	    )
+  	</insert>
+
+	<update id="updateStatus" parameterType="com.balabala.spring.tx.dist.base.MqMessage">
+		update
+			${tableName}
+		set
+			status = #{status,jdbcType=VARCHAR},
+			retry_count = #{retryCount,jdbcType=INTEGER},
+			version = version + 1,
+			update_time = now(),
+			<if test="nextRetryTime != null">
+				next_retry_time = #{nextRetryTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="sendSuccessTime != null">
+				send_success_time = #{sendSuccessTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="sendFailedTime != null">
+				send_failed_time = #{sendFailedTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="sendFailedReason != null">
+				send_failed_reason = #{sendFailedReason,jdbcType=VARCHAR},
+			</if>
+		where
+			id = #{id,jdbcType=BIGINT}
+			and version = #{version, jdbcType=INTEGER}
+	</update>
+
+</mapper>
