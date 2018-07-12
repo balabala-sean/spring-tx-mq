@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 /**
- * SpringBoot项目需要注入MqTransactionClient, 并手动调用start方法
+ * SpringBoot项目需要注入MqTransactionClient, 并手动调用start/stop方法
  *
  * @see com.mq.transaction.client.MqTransactionClient#start()
  * @see com.mq.transaction.client.MqTransactionClient#stop()
@@ -25,7 +25,12 @@ import javax.sql.DataSource;
 @ConditionalOnBean(DataSource.class)
 @EnableConfigurationProperties(MqTransactionProperties.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
-@ComponentScan("com.mq.transaction")
+@ComponentScan(
+    basePackages = {
+            "com.mq.transaction.springboot.autoconfigure",
+            "com.mq.transaction.client"
+    }
+)
 public class MqTransactionAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(MqTransactionAutoConfiguration.class);
@@ -53,5 +58,4 @@ public class MqTransactionAutoConfiguration {
         MqTransactionClient mqTransactionClient = new MqTransactionClient(mqTransactionConfiguration);
         return mqTransactionClient;
     }
-
 }

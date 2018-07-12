@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+    datasource:
+        druid:
+            url: jdbc:mysql://127.0.0.1:3306/trd?useUnicode=true&characterEncoding=UTF-8
+            username: mysql
+            password: 123456qaz
+            type: com.alibaba.druid.pool.DruidDataSource
+            driver-class-name: com.mysql.jdbc.Driver
+            initial-size: 10
+            max-active: 100
+            min-idle: 5
+            max-wait: 60000
+            validation-query: SELECT 1
+            test-on-borrow: false
+            test-on-return: false
+            test-while-idle: true
+            time-between-eviction-runs-millis: 60000
+            min-evictable-idle-time-millis: 25200000
+            remove-abandoned: true
+            remove-abandoned-timeout: 1800
+            logAbandoned: true
+            filters: stat
+            pool-prepared-statement: true
+            max-open-prepared-statements: 100
+
+
+springboot:
+  mq:
+    transaction:
+      brokerUrl: failover:(tcp://127.0.0.1:61616?wireFormat.maxInactivityDuration=0,tcp://116.62.158.149:61616?wireFormat.maxInactivityDuration=0)
+      queueTableName: trd_mq_message
+      memoryMaxQueueSize: 5000
+      senderThreadCount: 10
+      selectorThreadCount: 1
+      destroyerThreadCount: 1
+      expiredDayCount: 3
+      tableName: transaction_mq_message
+      autoCreateTable: true

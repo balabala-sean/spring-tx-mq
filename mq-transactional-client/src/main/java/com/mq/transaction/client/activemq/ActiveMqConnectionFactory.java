@@ -33,8 +33,10 @@ public class ActiveMqConnectionFactory {
         try {
 
             pooledConnectionFactory = new PooledConnectionFactory(activeMQConnectionFactory);
-            pooledConnectionFactory.setMaxConnections(200);
+            pooledConnectionFactory.setMaxConnections(20);
             pooledConnectionFactory.setBlockIfSessionPoolIsFull(true);
+            pooledConnectionFactory.setIdleTimeout(10);
+            pooledConnectionFactory.setExpiryTimeout(10);
             connection = (PooledConnection) pooledConnectionFactory.createConnection();
             connection.start();
         } catch (JMSException e) {

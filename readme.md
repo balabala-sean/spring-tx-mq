@@ -1,9 +1,12 @@
-### spring-tx-mq
+### mq-transactional project
+
+- mq-transactional-client 支持springboot、非spring boot项目
+- mq-transactional-springboot-starter 仅支持springboot项目使用
 
 
 
 
-initial.sql:(local message table)
+db-init.sql:(local message table)
 ```sql
 create table mq_message (
   id                    BIGINT AUTO_INCREMENT PRIMARY KEY,
