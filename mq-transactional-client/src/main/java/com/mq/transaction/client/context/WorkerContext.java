@@ -27,8 +27,6 @@ public final class WorkerContext {
     private static Logger logger = LoggerFactory.getLogger(WorkerContext.class);
 
     private volatile boolean destroy = false;// 是否销毁
-    private static final int DEFAULT_EXECUTOR_SERVICE_THREAD_NUMBER = 10;
-    private static final int DEFAULT_MEMORY_MQ_QUEUE_SIZE = 5000;
     private MqTransactionConfiguration mqTransactionConfiguration;
     private ExecutorService senderThreadPool;// 线程池
     private List<TerminalWorker> senderWorkList;
@@ -46,21 +44,23 @@ public final class WorkerContext {
     }
 
     private void initMemoryQueueSize(Integer memoryMaxQueueSize){
-        memoryMaxQueueSize = null == memoryMaxQueueSize ? DEFAULT_MEMORY_MQ_QUEUE_SIZE : memoryMaxQueueSize;
         this.memoryMqMessageQueue = new ArrayBlockingQueue<>(memoryMaxQueueSize);
     }
 
     public void start() {
         //消费者：负责向mq broker发送数据
-        this.senderThreadPool = Executors.newFixedThreadPool(DEFAULT_EXECUTOR_SERVICE_THREAD_NUMBER);
-        this.senderWorkList = new ArrayList<>(DEFAULT_EXECUTOR_SERVICE_THREAD_NUMBER);
-        for (int i = 0; i < DEFAULT_EXECUTOR_SERVICE_THREAD_NUMBER; i++) {
+        Integer senderThreadCount = mqTransactionConfiguration.getSenderThreadCount();
+        this.senderThreadPool = Executors.newFixedThreadPool(senderThreadCount);
+        this.senderWorkList = new ArrayList<>(senderThreadCount);
+        for (int i = 0; i < senderThreadCount; i++) {
             Sender sender = new Sender(sqlSessionTemplate, memoryMqMessageQueue, activeMqConnectionFactory);
             sender.setTableName(mqTransactionConfiguration.getTableName());
             senderWorkList.add(sender);
             this.senderThreadPool.submit(sender);
             logger.info("active activemq selector thread initial : ", i);
         }
+
+        // FIXME:babalaba.sean@gmail.com 这里目前都是单线程，压测后根据实际结果进行调优
 
         //生产者：负责向memory queue中add数据
         selector = new Selector(sqlSessionTemplate, memoryMqMessageQueue);
