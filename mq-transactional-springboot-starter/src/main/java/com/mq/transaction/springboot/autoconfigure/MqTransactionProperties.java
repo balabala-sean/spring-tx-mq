@@ -16,12 +16,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @NoArgsConstructor
 @ConfigurationProperties(prefix = "springboot.mq.transaction")
 public class MqTransactionProperties {
+
     private Integer memoryMaxQueueSize;
     private Integer senderThreadCount;
     private Integer selectorThreadCount;
     private Integer destroyerThreadCount;
     private Integer expiredDayCount;
-    private String tableName;
+    private String queueTableName;
     private String brokerUrl;
     private boolean autoCreateTable;
+
 }
