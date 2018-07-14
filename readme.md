@@ -33,12 +33,11 @@ springboot:
   mq:
     transaction:
       brokerUrl: failover:(tcp://127.0.0.1:61616?wireFormat.maxInactivityDuration=0,tcp://116.62.158.149:61616?wireFormat.maxInactivityDuration=0)
-      queueTableName: trd_mq_message
       memoryMaxQueueSize: 5000
       senderThreadCount: 10
       selectorThreadCount: 1
       destroyerThreadCount: 1
       expiredDayCount: 3
-      tableName: transaction_mq_message
-      autoCreateTable: true
+      queueTableName: mq_message #此处表名称和上面自行创建的表名称一致即可
+      autoCreateTable: false
 ```
