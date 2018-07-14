@@ -4,6 +4,8 @@ import com.mq.transaction.client.MqTransactionClient;
 import com.mq.transaction.client.conf.MqTransactionConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -14,11 +16,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.init.DataSourceInitializer;
+import org.springframework.util.Assert;
 
 import javax.sql.DataSource;
 
 /**
- * SpringBoot项目需要注入MqTransactionClient, 并手动调用start/stop方法
+ * 非SpringBoot项目需要注入MqTransactionClient, 并手动调用start/stop方法
  *
  * @see com.mq.transaction.client.MqTransactionClient#start()
  * @see com.mq.transaction.client.MqTransactionClient#stop()
@@ -34,12 +37,14 @@ import javax.sql.DataSource;
                 "com.mq.transaction.client"
         }
 )
-public class MqTransactionAutoConfiguration {
+public class MqTransactionAutoConfiguration implements InitializingBean, DisposableBean {
 
     private static final Logger logger = LoggerFactory.getLogger(MqTransactionAutoConfiguration.class);
 
     @Autowired
     private MqTransactionProperties mqTransactionProperties;
+
+    private MqTransactionClient mqTransactionClient;
 
     @Bean
     @ConditionalOnMissingBean
@@ -71,7 +76,19 @@ public class MqTransactionAutoConfiguration {
         logger.info("autoCreateTable:{}", mqTransactionProperties.isAutoCreateTable());
         logger.info("-----------------------------------------------------------------");
 
+        this.mqTransactionClient = mqTransactionClient;
         mqTransactionClient.start();
         return mqTransactionClient;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        mqTransactionClient.stop();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Assert.notNull(mqTransactionProperties.getBrokerUrl(), "brokerUrl must not be null");
+        Assert.notNull(mqTransactionProperties.getQueueTableName(), "brokerUrl must not be null");
     }
 }
