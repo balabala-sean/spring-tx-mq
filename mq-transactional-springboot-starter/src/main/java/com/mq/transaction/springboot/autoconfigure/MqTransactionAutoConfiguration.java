@@ -26,7 +26,7 @@ import javax.sql.DataSource;
  * @see com.mq.transaction.client.MqTransactionClient#start()
  * @see com.mq.transaction.client.MqTransactionClient#stop()
  *
- * @author sean 
+ * @author sean
  */
 
 @Configuration

@@ -1,6 +1,4 @@
-### mq-transactional project - 基于本地消息解决分布式事务的组件
-
-关于本地消息解决分布式事务的思路可自行科普
+### mq-transactional - 基于本地消息解决分布式事务的中间件
 
 mq-transactional支持spring、springboot项目，具体modules:
 - mq-transactional-client 支持springboot、非spring boot项目
