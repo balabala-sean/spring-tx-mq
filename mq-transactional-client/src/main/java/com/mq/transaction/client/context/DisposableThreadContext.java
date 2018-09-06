@@ -7,11 +7,11 @@ package com.mq.transaction.client.context;
  *
  * 详情可以查阅：
  *
- * @see DisposableCache#DisposableCache(java.util.concurrent.ArrayBlockingQueue, org.apache.ibatis.session.SqlSession)
+ * @see DisposableCache#DisposableCache(java.lang.String, java.util.concurrent.ArrayBlockingQueue, org.apache.ibatis.session.SqlSession)
  * @see WorkerContext#getMemoryMqMessageQueue()
  * @see com.mq.transaction.client.spring.MqTransactionSynchronization#afterCompletion(int)
  *
- * @author ZhangYongjia
+ * @author balabala.sean@gmail.com
  */
 public class DisposableThreadContext {
 

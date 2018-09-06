@@ -32,7 +32,7 @@ create index index_snr on mq_message (status, retry_count, next_retry_time);
 springboot:
   mq:
     transaction:
-      brokerUrl: failover:(tcp://127.0.0.1:61616?wireFormat.maxInactivityDuration=0,tcp://116.62.158.149:61616?wireFormat.maxInactivityDuration=0)
+      brokerUrl: failover:(tcp://127.0.0.1:61616?wireFormat.maxInactivityDuration=0,tcp://127.0.0.1:61616?wireFormat.maxInactivityDuration=0)
       memoryMaxQueueSize: 5000
       senderThreadCount: 10
       selectorThreadCount: 1

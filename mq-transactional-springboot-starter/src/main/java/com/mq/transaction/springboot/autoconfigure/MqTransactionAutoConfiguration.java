@@ -25,6 +25,8 @@ import javax.sql.DataSource;
  *
  * @see com.mq.transaction.client.MqTransactionClient#start()
  * @see com.mq.transaction.client.MqTransactionClient#stop()
+ *
+ * @author sean 
  */
 
 @Configuration
@@ -52,10 +54,8 @@ public class MqTransactionAutoConfiguration implements InitializingBean, Disposa
         logger.info("init bean {}", MqTransactionConfiguration.class.getCanonicalName());
         MqTransactionConfiguration mqTransactionConfiguration = new MqTransactionConfiguration(
                 mqTransactionProperties.getMemoryMaxQueueSize(),
-                mqTransactionProperties.getSenderThreadCount(),
-                mqTransactionProperties.getSelectorThreadCount(),
-                mqTransactionProperties.getDestroyerThreadCount(),
                 mqTransactionProperties.getExpiredDayCount(),
+                mqTransactionProperties.getSenderThreadCount(),
                 dataSource,
                 mqTransactionProperties.getQueueTableName(),
                 mqTransactionProperties.getBrokerUrl(),

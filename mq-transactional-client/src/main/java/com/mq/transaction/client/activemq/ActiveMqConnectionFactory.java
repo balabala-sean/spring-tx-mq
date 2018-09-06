@@ -31,7 +31,6 @@ public class ActiveMqConnectionFactory {
         activeMQConnectionFactory.setPassword(ActiveMQConnection.DEFAULT_PASSWORD);
         activeMQConnectionFactory.setBrokerURL(brokerUrls);
         try {
-
             pooledConnectionFactory = new PooledConnectionFactory(activeMQConnectionFactory);
             pooledConnectionFactory.setMaxConnections(20);
             pooledConnectionFactory.setBlockIfSessionPoolIsFull(true);

@@ -38,13 +38,12 @@ public final class WorkerContext {
 
 
     public WorkerContext(MqTransactionConfiguration mqTransactionConfiguration, MybatisSqlSessionFactory mybatisSqlSessionFactory, ActiveMqConnectionFactory activeMqConnectionFactory) {
+        // 初始化内存队列
+        this.memoryMqMessageQueue = new ArrayBlockingQueue<>(mqTransactionConfiguration.getMemoryMaxQueueSize());
+        // 初始化mybatis
         this.sqlSessionTemplate = mybatisSqlSessionFactory.getSessionTemplate();
-        this.initMemoryQueueSize(mqTransactionConfiguration.getMemoryMaxQueueSize());
+        // 初始化activemq
         this.activeMqConnectionFactory = activeMqConnectionFactory;
-    }
-
-    private void initMemoryQueueSize(Integer memoryMaxQueueSize){
-        this.memoryMqMessageQueue = new ArrayBlockingQueue<>(memoryMaxQueueSize);
     }
 
     public void start() {
@@ -55,7 +54,7 @@ public final class WorkerContext {
         for (int i = 0; i < senderThreadCount; i++) {
             Sender sender = new Sender(sqlSessionTemplate, memoryMqMessageQueue, activeMqConnectionFactory);
             sender.setTableName(mqTransactionConfiguration.getTableName());
-            senderWorkList.add(sender);
+            this.senderWorkList.add(sender);
             this.senderThreadPool.submit(sender);
             logger.info("active activemq selector thread initial : ", i);
         }
@@ -90,7 +89,7 @@ public final class WorkerContext {
             destroyer.terminate();
             destroy = true;
         } catch (Exception e) {
-            logger.error("desctory exception :", e);
+            logger.error("destroy exception :", e);
             throw new RuntimeException(e);
         }
     }

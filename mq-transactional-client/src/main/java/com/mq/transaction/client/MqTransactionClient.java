@@ -17,7 +17,8 @@ import java.util.List;
 @Component
 public class MqTransactionClient {
 
-    private static Logger logger = LoggerFactory.getLogger(MqTransactionClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(MqTransactionClient.class);
+
     private ActiveMqConnectionFactory activeMqConnectionFactory;
     private WorkerContext workerContext;
     private MqTransactionConfiguration mqTransactionConfiguration;
@@ -30,6 +31,7 @@ public class MqTransactionClient {
     public void send(MqMessage mqMessage){
         if (null == DisposableThreadContext.getCurrentThreadCache()){
             DisposableCache disposableCache = new DisposableCache(
+                    mqTransactionConfiguration.getTableName(),
                     workerContext.getMemoryMqMessageQueue(),
                     mybatisSqlSessionFactory.getSessionTemplate()
             );
@@ -47,6 +49,7 @@ public class MqTransactionClient {
     }
 
     public void start(){
+        logger.info("spring transaction-message client start");
         //database
         mybatisSqlSessionFactory = new MybatisSqlSessionFactory(mqTransactionConfiguration.getDataSource());
 

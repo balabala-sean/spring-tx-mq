@@ -20,16 +20,17 @@ public class DisposableCache {
     private List<MqMessage> currentThreadMqMessages = new ArrayList<>();
     private SqlSession sqlSession;
     private ArrayBlockingQueue<MqMessage> memoryMqMessageQueue;
+    private String mqMessageTableName;
 
-    public DisposableCache(ArrayBlockingQueue<MqMessage> memoryMqMessageQueue, SqlSession sqlSession){
+    public DisposableCache(String mqMessageTableName, ArrayBlockingQueue<MqMessage> memoryMqMessageQueue, SqlSession sqlSession){
         if (null == sqlSession) throw new RuntimeException("SqlSession must not be null");
         if (null == memoryMqMessageQueue) throw new RuntimeException("memoryMqMessageQueue must not be null");
-
+        this.mqMessageTableName = mqMessageTableName;
         this.sqlSession = sqlSession;
         this.memoryMqMessageQueue = memoryMqMessageQueue;
 
         // registe to spring transaction manager
-        new MqTransactionSynchronizationRegister().registe(new MqTransactionSynchronization());
+        new MqTransactionSynchronizationRegister().registe(new MqTransactionSynchronization(this.mqMessageTableName));
     }
 
     public void addMqMessage(MqMessage mqMessage) {

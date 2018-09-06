@@ -64,18 +64,18 @@ public class Selector extends TerminalWorker {
     public void selectMqMessageFromDatabase() {
         SqlSession session = sqlSessionTemplate.getSqlSessionFactory().openSession(ExecutorType.SIMPLE, false);
         MqMessageMapper mqMessageMapper = new MqMessageMapper(session);
-        logger.debug("待发送的消息定时任务开始...");
+        logger.debug("待发送的消息定时任务开始");
 
-        boolean islast = false;
+        boolean end = false;
         Date nextRetryTime = new Date();
-        while (!islast) {
+        while (!end) {
             List<MqMessage> list = mqMessageMapper.selectRetryMqMessageList(super.tableName, nextRetryTime, MqMessageStatusEnum.WAIT.getStatus(), start, perIncrement);
 
             logger.info("memory mq-message queue size:{}", memoryMqMessageQueue.size());
             logger.info("database select mq-message list size:{}", list.size());
 
             if (list.size() == 0) break;
-            if (list.size() < perIncrement) islast = true;
+            if (list.size() < perIncrement) end = true;
 
             for (MqMessage mqMessage : list) {
                 mqMessage.setTableName(tableName);
@@ -86,12 +86,17 @@ public class Selector extends TerminalWorker {
                 mqMessage.setRetryCount(mqMessage.getRetryCount() + 1);
                 mqMessage.setUpdateTime(new Timestamp(System.currentTimeMillis()));
                 mqMessage.setNextRetryTime(new RetryTimeCalculator().getNextRetryTime(mqMessage.getRetryCount() + 1));
-                int update = mqMessageMapper.updateRetryCount(mqMessage);
-                if (update > 0) {
-                    boolean flag = memoryMqMessageQueue.add(mqMessage);
-                    logger.info("add mq-message from database to memory queue:{}", mqMessage.getId());
-                }
 
+                boolean flag = memoryMqMessageQueue.add(mqMessage);
+                if (!flag){
+                    logger.info("add mq-message [{}] from database to memory queue failed", mqMessage.getId());
+                    continue;
+                }
+                int updateRow = mqMessageMapper.updateRetryCount(mqMessage);
+                if (updateRow!=1) {
+                    logger.info("add mq-message [{}] from database to memory queue failed", mqMessage.getId());
+                    memoryMqMessageQueue.remove(mqMessage);
+                }
             }
         }
 

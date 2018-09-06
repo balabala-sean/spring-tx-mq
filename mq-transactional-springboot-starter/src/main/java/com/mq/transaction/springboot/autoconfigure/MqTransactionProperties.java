@@ -19,8 +19,8 @@ public class MqTransactionProperties {
 
     private Integer memoryMaxQueueSize;
     private Integer senderThreadCount;
-    private Integer selectorThreadCount;
-    private Integer destroyerThreadCount;
+    private Integer selectorThreadCount = 1;
+    private Integer destroyerThreadCount = 1;
     private Integer expiredDayCount;
     private String queueTableName;
     private String brokerUrl;

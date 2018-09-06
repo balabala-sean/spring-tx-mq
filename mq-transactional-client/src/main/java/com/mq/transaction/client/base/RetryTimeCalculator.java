@@ -8,7 +8,6 @@ public class RetryTimeCalculator {
     private static final int MINUTE_STEP = 5;
 
     public Date getNextRetryTime(Integer retryCount){
-
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         if (retryCount >= 3){
@@ -16,7 +15,6 @@ public class RetryTimeCalculator {
         }else{
             calendar.add(Calendar.MINUTE, MINUTE_STEP);
         }
-
         return calendar.getTime();
     }
 }

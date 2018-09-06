@@ -1,12 +1,11 @@
 package com.mq.transaction.client.spring;
 
+import com.mq.transaction.client.base.MqMessage;
 import com.mq.transaction.client.base.MqMessageMapper;
+import com.mq.transaction.client.base.MqMessageStatusEnum;
 import com.mq.transaction.client.context.DisposableCache;
 import com.mq.transaction.client.context.DisposableThreadContext;
-import com.mq.transaction.client.base.MqMessageStatusEnum;
-import com.mq.transaction.client.base.MqMessage;
 import org.apache.ibatis.session.SqlSession;
-import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -27,14 +26,20 @@ import java.util.List;
  * 在事务提交后，对事务的状态进行判断，如果事务成功提交，则把当前线程中的MqMessage放到全局的memoryMqMessageQueue中
  * @see #afterCompletion(int)
  *
- * @author ZhangYongjia
+ * 这里遵循了spring的transaction propagation, 使用的时候不会影响required required_new required_nested等事务操作
+ *
+ * @author balabala.sean@gmail.com
  *
  */
 public class MqTransactionSynchronization extends TransactionSynchronizationAdapter {
 
     private static Logger logger = LoggerFactory.getLogger(MqTransactionSynchronization.class);
 
-    private SqlSessionTemplate sqlSessionTemplate;
+    private String mqMessageTableName;
+
+    public MqTransactionSynchronization(String mqMessageTableName){
+        this.mqMessageTableName = mqMessageTableName;
+    }
 
     @Override
     public void afterCompletion(int status) {
@@ -43,7 +48,7 @@ public class MqTransactionSynchronization extends TransactionSynchronizationAdap
         //判断Spring事务的状态
         if (TransactionSynchronization.STATUS_COMMITTED == 0){
             //transaction success
-            logger.info("Thread[{}] : local-activemq-spring success", currentThreadId);
+            logger.info("Thread[{}] : local-activemq-spring transaction exec success", currentThreadId);
 
             DisposableCache currentThreadCache = DisposableThreadContext.getCurrentThreadCache();
             List<MqMessage> currentThreadMqMessages = currentThreadCache.getCurrentThreadMqMessages();
@@ -55,12 +60,12 @@ public class MqTransactionSynchronization extends TransactionSynchronizationAdap
         }
 
         if (TransactionSynchronization.STATUS_ROLLED_BACK == 1){
-            logger.info("Thread[{}] : local-activemq-spring rollback", currentThreadId);
+            logger.info("Thread[{}] : local-activemq-spring transaction was rollback", currentThreadId);
         }
 
 
         if (TransactionSynchronization.STATUS_UNKNOWN == 2){
-            logger.warn("Thread[{}] : local-activemq-spring exception", currentThreadId);
+            logger.info("Thread[{}] : local-activemq-spring transaction has a exception", currentThreadId);
         }
 
         logger.warn("Thread[{}] : clear thread context cache", currentThreadId);
@@ -86,7 +91,7 @@ public class MqTransactionSynchronization extends TransactionSynchronizationAdap
             for (Iterator<MqMessage> iterator = mqMessages.iterator(); iterator.hasNext(); ) {
                 MqMessage mqMessage = iterator.next();
                 mqMessage.setRetryCount(0);
-                mqMessage.setTableName("mq_message");
+                mqMessage.setTableName(mqMessageTableName);
                 mqMessage.setCreateTime(new Timestamp(System.currentTimeMillis()));
                 mqMessage.setUpdateTime(new Timestamp(System.currentTimeMillis()));
                 mqMessage.setNextRetryTime(new Date());
