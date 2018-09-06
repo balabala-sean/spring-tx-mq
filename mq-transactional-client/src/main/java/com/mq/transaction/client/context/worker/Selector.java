@@ -44,14 +44,7 @@ public class Selector extends TerminalWorker {
             logger.error("后台补偿线程出现错误" + e.getMessage());
         }
 
-        sleep();
-    }
-
-    private void sleep(){
-        try {
-            Thread.sleep(interval);
-        } catch (InterruptedException e) {
-        }
+        super.sleep(interval);
     }
 
 

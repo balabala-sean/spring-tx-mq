@@ -2,7 +2,7 @@ package com.mq.transaction.client.context;
 
 import com.mq.transaction.client.activemq.ActiveMqConnectionFactory;
 import com.mq.transaction.client.base.MqMessage;
-import com.mq.transaction.client.conf.MqTransactionConfiguration;
+import com.mq.transaction.client.conf.Configuration;
 import com.mq.transaction.client.context.worker.Destroyer;
 import com.mq.transaction.client.context.worker.Selector;
 import com.mq.transaction.client.context.worker.Sender;
@@ -27,7 +27,7 @@ public final class WorkerContext {
     private static Logger logger = LoggerFactory.getLogger(WorkerContext.class);
 
     private volatile boolean destroy = false;// 是否销毁
-    private MqTransactionConfiguration mqTransactionConfiguration;
+    private Configuration configuration;
     private ExecutorService senderThreadPool;// 线程池
     private List<TerminalWorker> senderWorkList;
     private TerminalWorker selector;
@@ -37,9 +37,9 @@ public final class WorkerContext {
     private ArrayBlockingQueue<MqMessage> memoryMqMessageQueue = null;
 
 
-    public WorkerContext(MqTransactionConfiguration mqTransactionConfiguration, MybatisSqlSessionFactory mybatisSqlSessionFactory, ActiveMqConnectionFactory activeMqConnectionFactory) {
+    public WorkerContext(Configuration configuration, MybatisSqlSessionFactory mybatisSqlSessionFactory, ActiveMqConnectionFactory activeMqConnectionFactory) {
         // 初始化内存队列
-        this.memoryMqMessageQueue = new ArrayBlockingQueue<>(mqTransactionConfiguration.getMemoryMaxQueueSize());
+        this.memoryMqMessageQueue = new ArrayBlockingQueue<>(configuration.getMemoryMaxQueueSize());
         // 初始化mybatis
         this.sqlSessionTemplate = mybatisSqlSessionFactory.getSessionTemplate();
         // 初始化activemq
@@ -48,12 +48,12 @@ public final class WorkerContext {
 
     public void start() {
         //消费者：负责向mq broker发送数据
-        Integer senderThreadCount = mqTransactionConfiguration.getSenderThreadCount();
+        Integer senderThreadCount = configuration.getSenderThreadCount();
         this.senderThreadPool = Executors.newFixedThreadPool(senderThreadCount);
         this.senderWorkList = new ArrayList<>(senderThreadCount);
         for (int i = 0; i < senderThreadCount; i++) {
             Sender sender = new Sender(sqlSessionTemplate, memoryMqMessageQueue, activeMqConnectionFactory);
-            sender.setTableName(mqTransactionConfiguration.getTableName());
+            sender.setTableName(configuration.getTableName());
             this.senderWorkList.add(sender);
             this.senderThreadPool.submit(sender);
             logger.info("active activemq selector thread initial : ", i);
@@ -63,13 +63,13 @@ public final class WorkerContext {
 
         //生产者：负责向memory queue中add数据
         selector = new Selector(sqlSessionTemplate, memoryMqMessageQueue);
-        selector.setTableName(mqTransactionConfiguration.getTableName());
+        selector.setTableName(configuration.getTableName());
 
         new Thread(selector).start();
 
         //消息销毁：删除历史3天的数据
-        destroyer = new Destroyer(sqlSessionTemplate, mqTransactionConfiguration.getExpiredDayCount());
-        destroyer.setTableName(mqTransactionConfiguration.getTableName());
+        destroyer = new Destroyer(sqlSessionTemplate, configuration.getExpiredDayCount());
+        destroyer.setTableName(configuration.getTableName());
 
         new Thread(destroyer).start();
 

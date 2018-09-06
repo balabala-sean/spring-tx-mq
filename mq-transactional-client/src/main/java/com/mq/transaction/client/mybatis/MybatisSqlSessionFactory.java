@@ -1,5 +1,6 @@
 package com.mq.transaction.client.mybatis;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -13,9 +14,8 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 
 import javax.sql.DataSource;
 
+@Slf4j
 public class MybatisSqlSessionFactory {
-
-    private static Logger logger = LoggerFactory.getLogger(MybatisSqlSessionFactory.class);
 
     private SqlSessionTemplate sqlSessionTemplate;
 
@@ -31,7 +31,7 @@ public class MybatisSqlSessionFactory {
             SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBean.getObject();
             this.sqlSessionTemplate = new SqlSessionTemplate(sqlSessionFactory);
         } catch (Exception e) {
-            logger.error("create mybatis sqlsession factory has a exception:", e);
+            log.error("create mybatis sql-session factory failed, mq-client will exit(-1):", e);
             System.exit(-1);
         }
     }

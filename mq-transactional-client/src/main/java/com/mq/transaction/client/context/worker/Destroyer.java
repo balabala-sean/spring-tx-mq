@@ -46,12 +46,14 @@ public class Destroyer extends TerminalWorker {
             i = mqMessageMapper.deleteHistoryMqMessages(super.tableName, calendar.getTime(), MqMessageStatusEnum.FAILED.getStatus());
             logger.info("delete last {} days history mq messages[failed], count : {}", expiredDayCount, i);
 
-            Thread.currentThread().sleep(interval);
         } catch (Exception e) {
             logger.error("delete last {} days history mq messages[error]", e);
         } finally {
             session.close();
+            super.sleep(interval);
         }
+
+
     }
 
     @Override

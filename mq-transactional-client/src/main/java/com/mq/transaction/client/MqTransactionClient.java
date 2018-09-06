@@ -1,6 +1,6 @@
 package com.mq.transaction.client;
 
-import com.mq.transaction.client.conf.MqTransactionConfiguration;
+import com.mq.transaction.client.conf.Configuration;
 import com.mq.transaction.client.context.WorkerContext;
 import com.mq.transaction.client.context.DisposableThreadContext;
 import com.mq.transaction.client.base.MqMessage;
@@ -21,17 +21,17 @@ public class MqTransactionClient {
 
     private ActiveMqConnectionFactory activeMqConnectionFactory;
     private WorkerContext workerContext;
-    private MqTransactionConfiguration mqTransactionConfiguration;
+    private Configuration configuration;
     private MybatisSqlSessionFactory mybatisSqlSessionFactory;
 
-    public MqTransactionClient(MqTransactionConfiguration mqTransactionConfiguration){
-        this.mqTransactionConfiguration = mqTransactionConfiguration;
+    public MqTransactionClient(Configuration configuration){
+        this.configuration = configuration;
     }
 
     public void send(MqMessage mqMessage){
         if (null == DisposableThreadContext.getCurrentThreadCache()){
             DisposableCache disposableCache = new DisposableCache(
-                    mqTransactionConfiguration.getTableName(),
+                    configuration.getTableName(),
                     workerContext.getMemoryMqMessageQueue(),
                     mybatisSqlSessionFactory.getSessionTemplate()
             );
@@ -51,14 +51,14 @@ public class MqTransactionClient {
     public void start(){
         logger.info("spring transaction-message client start");
         //database
-        mybatisSqlSessionFactory = new MybatisSqlSessionFactory(mqTransactionConfiguration.getDataSource());
+        mybatisSqlSessionFactory = new MybatisSqlSessionFactory(configuration.getDataSource());
 
         //activemq
-        activeMqConnectionFactory = new ActiveMqConnectionFactory(mqTransactionConfiguration.getBrokerUrl());
+        activeMqConnectionFactory = new ActiveMqConnectionFactory(configuration.getBrokerUrl());
         activeMqConnectionFactory.start();
 
         //thread worker
-        workerContext = new WorkerContext(mqTransactionConfiguration, mybatisSqlSessionFactory, activeMqConnectionFactory);
+        workerContext = new WorkerContext(configuration, mybatisSqlSessionFactory, activeMqConnectionFactory);
         workerContext.start();
     }
 

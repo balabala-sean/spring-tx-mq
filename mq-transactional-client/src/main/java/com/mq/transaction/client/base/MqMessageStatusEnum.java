@@ -5,8 +5,8 @@ import lombok.Getter;
 
 @Getter
 public enum MqMessageStatusEnum {
-    WAIT("WAIT"),
-    SELECTED("SELECTED"),
+    WAIT("WAIT_TO_SEND"),
+    SELECTED("SELECTED_TO_MEMORY"),
     SUCCESS("SEND_SUCCESS"),
     FAILED("FAILED");
 

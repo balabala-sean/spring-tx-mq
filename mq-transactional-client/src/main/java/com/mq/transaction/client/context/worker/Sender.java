@@ -1,22 +1,16 @@
 package com.mq.transaction.client.context.worker;
 
-import com.alibaba.fastjson.JSON;
 import com.mq.transaction.client.activemq.ActiveMqConnectionFactory;
 import com.mq.transaction.client.base.MqMessage;
 import com.mq.transaction.client.base.MqMessageMapper;
 import com.mq.transaction.client.base.MqMessageStatusEnum;
-import com.mq.transaction.client.base.RetryTimeCalculator;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -81,7 +75,6 @@ public class Sender extends TerminalWorker {
             producer.send(textMessage);
 
             // 消息发送成功:更新数据库
-
             mqMessage.setStatus(MqMessageStatusEnum.SUCCESS.getStatus());
             mqMessage.setSendSuccessTime(new Date());
             mqMessage.setUpdateTime(new Timestamp(System.currentTimeMillis()));

@@ -1,7 +1,7 @@
 package com.mq.transaction.springboot.autoconfigure;
 
 import com.mq.transaction.client.MqTransactionClient;
-import com.mq.transaction.client.conf.MqTransactionConfiguration;
+import com.mq.transaction.client.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -14,7 +14,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.init.DataSourceInitializer;
 import org.springframework.util.Assert;
 
@@ -29,7 +28,7 @@ import javax.sql.DataSource;
  * @author sean
  */
 
-@Configuration
+@org.springframework.context.annotation.Configuration
 @ConditionalOnBean({DataSourceInitializer.class, DataSource.class})
 @EnableConfigurationProperties(MqTransactionProperties.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
@@ -51,8 +50,8 @@ public class MqTransactionAutoConfiguration implements InitializingBean, Disposa
     @Bean
     @ConditionalOnMissingBean
     public MqTransactionClient mqTransactionClient(DataSource dataSource) {
-        logger.info("init bean {}", MqTransactionConfiguration.class.getCanonicalName());
-        MqTransactionConfiguration mqTransactionConfiguration = new MqTransactionConfiguration(
+        logger.info("init bean {}", Configuration.class.getCanonicalName());
+        Configuration configuration = new Configuration(
                 mqTransactionProperties.getMemoryMaxQueueSize(),
                 mqTransactionProperties.getExpiredDayCount(),
                 mqTransactionProperties.getSenderThreadCount(),
@@ -62,7 +61,7 @@ public class MqTransactionAutoConfiguration implements InitializingBean, Disposa
                 mqTransactionProperties.isAutoCreateTable()
         );
 
-        MqTransactionClient mqTransactionClient = new MqTransactionClient(mqTransactionConfiguration);
+        MqTransactionClient mqTransactionClient = new MqTransactionClient(configuration);
         logger.info("init bean {}", MqTransactionClient.class.getCanonicalName());
         logger.info("begin start with configuration:  ");
         logger.info("-----------------------------------------------------------------");

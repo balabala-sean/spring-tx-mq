@@ -39,7 +39,7 @@ public class ActiveMqConnectionFactory {
             connection = (PooledConnection) pooledConnectionFactory.createConnection();
             connection.start();
         } catch (JMSException e) {
-            logger.error("activemq exception:", e);
+            logger.error("create activemq connection factory failed, mq-client will exit(-1):", e);
             System.exit(-1);
         }
     }

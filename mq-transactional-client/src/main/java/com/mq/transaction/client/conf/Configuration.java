@@ -8,7 +8,7 @@ import javax.sql.DataSource;
 
 @Data
 @ToString
-public class MqTransactionConfiguration {
+public class Configuration {
 
     //默认的过期时间，单位是天
     private static final int DEFAULT_EXPIRED_DAY_COUNT = 3;
@@ -39,12 +39,12 @@ public class MqTransactionConfiguration {
     private boolean autoCreateTable = false;
 
 
-    public MqTransactionConfiguration(DataSource dataSource, String brokerUrl) {
+    public Configuration(DataSource dataSource, String brokerUrl) {
         this(DEFAULT_MEMORY_MQ_QUEUE_SIZE, DEFAULT_SENDER_THREAD_COUNT, DEFAULT_EXPIRED_DAY_COUNT, dataSource, DEFAULT_MQ_TABLE_NAME, brokerUrl, false);
     }
 
 
-    public MqTransactionConfiguration(Integer memoryMaxQueueSize, Integer senderThreadCount, Integer expiredDayCount, DataSource dataSource, String tableName, String brokerUrl, boolean autoCreateTable) {
+    public Configuration(Integer memoryMaxQueueSize, Integer senderThreadCount, Integer expiredDayCount, DataSource dataSource, String tableName, String brokerUrl, boolean autoCreateTable) {
         if (null == dataSource)  throw new IllegalArgumentException("dataSource must not be null");
         if (StringUtils.isEmpty(brokerUrl)) throw new IllegalArgumentException("brokerUrl must not be null");
         this.dataSource = dataSource;

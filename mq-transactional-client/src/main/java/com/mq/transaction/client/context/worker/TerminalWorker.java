@@ -45,4 +45,11 @@ public abstract class TerminalWorker implements Runnable {
     protected abstract void prepare();
     protected abstract void work();
     protected abstract void after();
+
+    protected void sleep(int interval){
+        try {
+            Thread.sleep(interval);
+        } catch (InterruptedException e) {
+        }
+    }
 }
